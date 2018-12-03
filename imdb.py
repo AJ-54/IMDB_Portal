@@ -180,5 +180,5 @@ while (1>0) :
         print "\nThank you for using!"
         status.write("\nThank you for using!")
         break
-
+# Closes the text file 
 status.close()
