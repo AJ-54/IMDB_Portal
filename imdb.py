@@ -24,7 +24,7 @@ def info_movie():
     response = requests.get(url)
 	
 	# The response cannot be printed directly as it contains data in dictionary form which is json type.  Python has inbuit library json which takes care of 
-	#data files being exchanged between web server and browser.		
+	# data files being exchanged between web server and browser.		
     u = json.loads(response.text)
 	
 	
