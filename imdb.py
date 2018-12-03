@@ -4,26 +4,43 @@ import sys
 import json
 import bs4
 
+# Clears the screen in python.
+os.system('clear')			
 
-os.system('clear')
-
-
-status=open('info.txt','a')
+# Creates/opens info.tx in open mode.
+status=open('info.txt','a')		
 
 
 
 def info_movie():
-    name = raw_input('\nEnter the title of the movie: ')
-    t = name.replace(' ','%20')
+		
+	name = raw_input("\n Enter the title of the movie: ")
+	
+	# Replaces all whitespaces with string '%20'.
+	t = name.replace(' ','%20')	
+	
+	# The url is stored inside the variable and python can open the url using request module. We need a unique api_key to extract data from domain.	
     url = 'https://api.themoviedb.org/3/search/movie?api_key=ffb07b773769d55c36ccd83845385205&language=en-US&query='+str(t)+'&page=1&include_adult=false'
     response = requests.get(url)
+	
+	# The response cannot be printed directly as it contains data in dictionary form which is json type.  Python has inbuit library json which takes care of 
+	#data files being exchanged between web server and browser.		
     u = json.loads(response.text)
-    results  = u['results']
+	
+	
+	# The above variable u stores the result of your search and next two lines extracts the topmost movie and its unique id.
+	results  = u['results']
     id = results[0]['id']
+	
+	# The below url2 variable stores the link which contains complete information of our movie.	
     url2 = 'https://api.themoviedb.org/3/movie/'+str(id)+'?api_key=ffb07b773769d55c36ccd83845385205&language=en-US'
     response = requests.get(url2)
     w = json.loads(response.text)
+	
+	# w now contains all our information in list with dictionary elements . We can extract our information by referring to the keys.
     try:
+	
+		# Variables point towards the keys and have our desired results.
 		title = w['title']
 		imdb_id = w['imdb_id']
 		year = w['release_date']
@@ -31,29 +48,36 @@ def info_movie():
 		language = w['spoken_languages']
 		duration = w['runtime']
 		plot = w['overview']
-
+		
+		
+		# The rating value needs to be extracted from the html of the movie page and thus we open the page with url3 which is a normal url and not opened using
+		# api_key.This response is of text type and HTML code.		
 		url3 = 'http://www.imdb.com/title/'+str(imdb_id)
 		response = requests.get(url3)
 		html = response.text
+		
+		# We use beautiful soup and lxml modules to extract the rating of movie and now we are done with all the information.
 		soup = bs4.BeautifulSoup(html,"lxml")
 		data = soup.select('.ratingValue')
 		rating = data[0].get_text('',strip=True)
+		
+		
 
 		print ("\n\n----------------------------MOVIE INFORMATION-------------------------\n")
 		print ("\n\t TITLE       : \t\t"+title)
 		print ("\n\t IMDB RATING : \t\t"+rating)
 		print ("\n\t RELEASED ON : \t\t"+year)
 		print ("\n\t DURATION    : \t\t"+str(duration)+" mins")
-		# print ("\n\t LANGUAGE    : \t\t"+language[0]['name'])
 		print ("\n\t GENRE       : \t\t"+genre[0]['name'])
 		print ("\n\t PLOT        : \t\t"+plot)
-
+		
+		
+		# Below comands appends the data to txt file which we opened in append mode.
 		status.write ("\n\n--------------------------------------MOVIE INFORMATION---------------------------------\n")
 		status.write ("\n\t TITLE       : \t\t"+title)
 		status.write ("\n\t IMDB RATING : \t\t"+rating)
 		status.write ("\n\t RELEASED ON : \t\t"+year)
 		status.write ("\n\t DURATION    : \t\t"+str(duration)+" mins")
-		# status.write ("\n\t LANGUAGE    : \t\t"+language[0]['name'])
 		status.write ("\n\t GENRE       : \t\t"+genre[0]['name'])
 		status.write ("\n\t PLOT        : \t\t"+plot)
 
@@ -67,8 +91,10 @@ def top_movies():
     url = 'http://www.imdb.com/chart/top'
     response = requests.get(url)
     html = response.text
-    soup = bs4.BeautifulSoup(html,"lxml")
-    rows = soup.select('.lister-list tr')
+	
+	# Stores the complete webpage html code
+    soup = bs4.BeautifulSoup(html,"lxml")			
+    rows = soup.select('.lister-list tr')				
     print ("\n"+"----------------------------------TOP "+str(x)+" MOVIES ACCORDING TO IMDB RATINGS---------------------------------"+"\n\n")
     print (" \t   TITLE\t\t\t\t\t\t\t\t\t\t   IMDB RATING\n\n")
     status.write ("\n"+"---------------------------TOP "+str(x)+" MOVIES ACCORDING TO IMDB RATINGS-----------------------------"+"\n\n")
@@ -76,12 +102,15 @@ def top_movies():
     
     for row in range(0,x):
         tdata=rows[row].select('td')
+		# Extracts name of movie
         name=tdata[1].get_text(' ',strip=True)
-        rating=tdata[2].get_text(' ',strip=True)
+		# Extracts rating of movie
+        rating=tdata[2].get_text(' ',strip=True)			 					
         ans=("\n "+name.ljust(75,' ')+"\t\t\t\t"+rating+"\n")
         ans=ans.encode('ascii','ignore')
         print ans
-        status.write (ans)
+		# Appends data in file info.txt 
+        status.write (ans)											 					
         
         
 def folder():
@@ -89,7 +118,8 @@ def folder():
     dirs = os.listdir(path)
     print "Showing results for the path: "+path+"\n"
     status.write ('Showing results for the path: '+path+'\n')
-    
+	
+	# The process is similar to the one encountered in method info_movie.   
     for i in range(len(dirs)):
 		x = dirs[i]
 		t = x.replace(' ','%20')
